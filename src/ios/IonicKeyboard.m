@@ -6,17 +6,22 @@
 
 @synthesize hideKeyboardAccessoryBar = _hideKeyboardAccessoryBar;
 @synthesize disableScroll = _disableScroll;
-//@synthesize styleDark = _styleDark;
 
 - (void)pluginInitialize {
   
     NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
     __weak IonicKeyboard* weakSelf = self;
 
-    //set defaults
-    self.hideKeyboardAccessoryBar = NO;
-    self.disableScroll = NO;
-    //self.styleDark = NO;
+    NSString* setting = nil;
+
+    setting = @"HideKeyboardAccessoryBar";
+    if ([self settingForKey:setting]) {
+        self.hideKeyboardAccessoryBar = [(NSNumber*)[self settingForKey:setting] boolValue];
+    }
+    setting = @"DisableScroll";
+    if ([self settingForKey:setting]) {
+        self.disableScroll = [(NSNumber*)[self settingForKey:setting] boolValue];
+    }
     
     _keyboardShowObserver = [nc addObserverForName:UIKeyboardWillShowNotification
                                object:nil
@@ -81,26 +86,6 @@
     _hideKeyboardAccessoryBar = hideKeyboardAccessoryBar;
 }
 
-/*
-- (BOOL)styleDark {
-    return _styleDark;
-}
-
-- (void)setStyleDark:(BOOL)styleDark {
-    if (styleDark == _styleDark) {
-        return;
-    }
-    if (styleDark) {
-        self.webView.styleDark = YES;
-    }
-    else {
-        self.webView.styleDark = NO;
-    }
-
-    _styleDark = styleDark;
-}
-*/
-
 
 /* ------------------------------------------------------------- */
 
@@ -144,17 +129,6 @@
 - (void) show:(CDVInvokedUrlCommand*)command {
     NSLog(@"Showing keyboard not supported in iOS due to platform limitations.");
 }
-
-/*
-- (void) styleDark:(CDVInvokedUrlCommand*)command {
-    if (!command.arguments || ![command.arguments count]){
-      return;
-    }
-    id value = [command.arguments objectAtIndex:0];
-    
-    self.styleDark = [value boolValue];
-}
-*/
 
 @end
 
