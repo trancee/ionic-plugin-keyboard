@@ -2,12 +2,6 @@
 #import "UIWebViewExtension.h"
 #import <Cordova/CDVAvailability.h>
 
-@interface IonicKeyboard () <UIScrollViewDelegate>
-
-#@property (nonatomic, readwrite, assign) BOOL keyboardIsVisible;
-
-@end
-
 @implementation IonicKeyboard
 
 @synthesize hideKeyboardAccessoryBar = _hideKeyboardAccessoryBar;
@@ -29,7 +23,7 @@
         self.disableScroll = [(NSNumber*)[self settingForKey:setting] boolValue];
     }
     
-    _keyboardShowObserver = [nc addObserverForName:UIKeyboardWillShowNotification
+    _keyboardDidShowObserver = [nc addObserverForName:UIKeyboardDidShowNotification
                                object:nil
                                queue:[NSOperationQueue mainQueue]
                                usingBlock:^(NSNotification* notification) {
@@ -38,20 +32,28 @@
                                    keyboardFrame = [self.viewController.view convertRect:keyboardFrame fromView:nil];
                                    
                                    [weakSelf.commandDelegate evalJs:[NSString stringWithFormat:@"cordova.plugins.Keyboard.isVisible = true; cordova.fireWindowEvent('native.keyboardshow', { 'keyboardHeight': %@ }); ", [@(keyboardFrame.size.height) stringValue]]];
-
-                                   //deprecated
-                                   [weakSelf.commandDelegate evalJs:[NSString stringWithFormat:@"cordova.fireWindowEvent('native.showkeyboard', { 'keyboardHeight': %@ }); ", [@(keyboardFrame.size.height) stringValue]]];
                                }];
-    
-    _keyboardHideObserver = [nc addObserverForName:UIKeyboardWillHideNotification
+    _keyboardDidHideObserver = [nc addObserverForName:UIKeyboardDidHideNotification
+                               object:nil
+                               queue:[NSOperationQueue mainQueue]
+                               usingBlock:^(NSNotification* notification) {
+                               }];
+
+    _keyboardWillShowObserver = [nc addObserverForName:UIKeyboardWillShowNotification
+                               object:nil
+                               queue:[NSOperationQueue mainQueue]
+                               usingBlock:^(NSNotification* notification) {
+                               }];
+    _keyboardWillHideObserver = [nc addObserverForName:UIKeyboardWillHideNotification
                                object:nil
                                queue:[NSOperationQueue mainQueue]
                                usingBlock:^(NSNotification* notification) {
                                    [weakSelf.commandDelegate evalJs:@"cordova.plugins.Keyboard.isVisible = false; cordova.fireWindowEvent('native.keyboardhide'); "];
-
-                                   //deprecated
-                                   [weakSelf.commandDelegate evalJs:@"cordova.fireWindowEvent('native.hidekeyboard'); "];
                                }];
+}
+- (id)settingForKey:(NSString*)key
+{
+    return [self.commandDelegate.settings objectForKey:[key lowercaseString]];
 }
 - (BOOL)disableScroll {
     return _disableScroll;
@@ -106,6 +108,8 @@
 
     [nc removeObserver:self name:UIKeyboardWillShowNotification object:nil];
     [nc removeObserver:self name:UIKeyboardWillHideNotification object:nil];
+    [nc removeObserver:self name:UIKeyboardDidShowNotification object:nil];
+    [nc removeObserver:self name:UIKeyboardDidHideNotification object:nil];
 }
 
 /* ------------------------------------------------------------- */
@@ -134,13 +138,6 @@
 
 - (void) show:(CDVInvokedUrlCommand*)command {
     NSLog(@"Showing keyboard not supported in iOS due to platform limitations.");
-}
-
-#pragma mark UIScrollViewDelegate
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    if(disableScroll){
-        scrollView.bounds = self.webView.bounds;
-    }
 }
 
 @end
