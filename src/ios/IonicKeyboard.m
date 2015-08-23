@@ -2,6 +2,12 @@
 #import "UIWebViewExtension.h"
 #import <Cordova/CDVAvailability.h>
 
+@interface IonicKeyboard () <UIScrollViewDelegate>
+
+#@property (nonatomic, readwrite, assign) BOOL keyboardIsVisible;
+
+@end
+
 @implementation IonicKeyboard
 
 @synthesize hideKeyboardAccessoryBar = _hideKeyboardAccessoryBar;
@@ -128,6 +134,13 @@
 
 - (void) show:(CDVInvokedUrlCommand*)command {
     NSLog(@"Showing keyboard not supported in iOS due to platform limitations.");
+}
+
+#pragma mark UIScrollViewDelegate
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    if(disableScroll){
+        scrollView.bounds = self.webView.bounds;
+    }
 }
 
 @end
